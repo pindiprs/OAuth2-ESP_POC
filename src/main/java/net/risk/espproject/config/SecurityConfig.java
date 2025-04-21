@@ -26,11 +26,11 @@ import org.springframework.security.oauth2.server.authorization.client.InMemoryR
 import org.springframework.security.oauth2.server.authorization.client.RegisteredClient;
 import org.springframework.security.oauth2.server.authorization.client.RegisteredClientRepository;
 import org.springframework.security.oauth2.server.authorization.config.annotation.web.configurers.OAuth2AuthorizationServerConfigurer;
-import org.springframework.security.oauth2.server.authorization.settings.AuthorizationServerSettings;
-import org.springframework.security.oauth2.server.authorization.token.JwtEncodingContext;
-import org.springframework.security.oauth2.server.authorization.token.OAuth2TokenCustomizer;
+import org.springframework.security.oauth2.server.authorization.settings.TokenSettings;
+import org.springframework.security.oauth2.server.authorization.token.*;
 import org.springframework.security.web.SecurityFilterChain;
 
+import java.time.Duration;
 import java.time.Instant;
 
 import java.util.UUID;
@@ -40,8 +40,10 @@ import java.util.UUID;
 @EnableWebSecurity
 public class SecurityConfig {
 
-    @Value("${esp-client-userName}") String espClientUserName;
-    @Value("${esp-client-password}") String espClientPassword;
+    @Value("${esp-client-userName}")
+    String espClientUserName;
+    @Value("${esp-client-password}")
+    String espClientPassword;
 
     @Autowired
     private JwksApiRepository jwksApiRepository;
@@ -50,13 +52,13 @@ public class SecurityConfig {
     public SecurityFilterChain authorizationServerSecurityFilterChain(HttpSecurity http) throws Exception {
         OAuth2AuthorizationServerConfigurer authorizationServerConfigurer =
                 OAuth2AuthorizationServerConfigurer.authorizationServer();
-
         http
                 .securityMatcher(authorizationServerConfigurer.getEndpointsMatcher())
                 .with(authorizationServerConfigurer, (authServer) -> {
                     authServer
                             .oidc(Customizer.withDefaults())
                             .registeredClientRepository(registeredClientRepository());
+
                 });
 
         return http.build();
@@ -64,6 +66,7 @@ public class SecurityConfig {
 
     /**
      * Registered client repository
+     *
      * @return registered client repository for OAuth 2.0 client registration
      */
     @Bean
@@ -71,10 +74,17 @@ public class SecurityConfig {
         RegisteredClient espClient = RegisteredClient.withId(UUID.randomUUID().toString())
                 .clientIdIssuedAt(Instant.now())
                 .clientId(espClientUserName)
-                .clientSecret("{noop}"+espClientPassword)
-                .clientAuthenticationMethod(ClientAuthenticationMethod.CLIENT_SECRET_BASIC)
-                .authorizationGrantTypes( authorizationGrantTypes -> {
+                .clientSecret("{noop}" + espClientPassword)
+                .clientAuthenticationMethod(ClientAuthenticationMethod.CLIENT_SECRET_POST)
+                .tokenSettings(TokenSettings
+                        .builder()
+                        .accessTokenTimeToLive(Duration.ofMinutes(60))
+                        .refreshTokenTimeToLive(Duration.ofMinutes(60))
+                        .build()
+                )
+                .authorizationGrantTypes(authorizationGrantTypes -> {
                     authorizationGrantTypes.add(AuthorizationGrantType.CLIENT_CREDENTIALS);
+                    authorizationGrantTypes.add(AuthorizationGrantType.REFRESH_TOKEN);
                 })
                 .scope("read")
                 .build();
@@ -83,8 +93,9 @@ public class SecurityConfig {
     }
 
     @Bean
-    public JWKSource<SecurityContext> jwkSource() throws Exception {
-        JsonObject privateKeyRecord = jwksApiRepository.getPrivateKey("AccAuth");
+    public JWKSource<SecurityContext> jwkSource() {
+        String accAuth = "AccAuth";
+        JsonObject privateKeyRecord = jwksApiRepository.getPrivateKey(accAuth);
 
         String x = privateKeyRecord.get("x").getAsString();
         String y = privateKeyRecord.get("y").getAsString();
@@ -107,7 +118,7 @@ public class SecurityConfig {
         return context -> {
             // Set the desired signature algorithm dynamically
             context.getJwsHeader().algorithm(SignatureAlgorithm.ES256);
+            context.getClaims().claim("client_id", espClientUserName);
         };
     }
-
 }
