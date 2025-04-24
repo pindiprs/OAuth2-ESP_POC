@@ -35,10 +35,9 @@ import java.util.UUID;
 @EnableWebSecurity
 public class Oauth2Config {
 
-    @Value("${esp-client-userName}")
-    String espClientUserName;
-    @Value("${esp-client-password}")
-    String espClientPassword;
+    @Value("${esp-client-userName}")  String espClientUserName;
+    @Value("${esp-client-password}")  String espClientPassword;
+
     JwkSourceService jwkSourceService;
 
     @Autowired
@@ -47,7 +46,7 @@ public class Oauth2Config {
     }
 
     @Bean
-    public SecurityFilterChain authorizationServerSecurityFilterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain oauth2SecurityFilterChain(HttpSecurity http) throws Exception {
         OAuth2AuthorizationServerConfigurer authorizationServerConfigurer =
                 OAuth2AuthorizationServerConfigurer.authorizationServer();
         http
@@ -97,6 +96,7 @@ public class Oauth2Config {
     public JwtEncoder jwtEncoder() {
         return new NimbusJwtEncoder(jwkSourceService.getJwkSource());
     }
+
     @Bean
     public OAuth2TokenCustomizer<JwtEncodingContext> jwtCustomizer() {
         return context -> {
@@ -105,4 +105,5 @@ public class Oauth2Config {
             context.getClaims().claim("client_id", espClientUserName);
         };
     }
+
 }
