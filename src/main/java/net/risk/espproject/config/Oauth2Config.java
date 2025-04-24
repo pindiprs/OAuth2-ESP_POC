@@ -1,14 +1,9 @@
 package net.risk.espproject.config;
 
 
-import com.nimbusds.jose.jwk.ECKey;
-import com.nimbusds.jose.jwk.JWKSet;
 import com.nimbusds.jose.jwk.source.JWKSource;
 import com.nimbusds.jose.proc.SecurityContext;
-import com.nimbusds.jose.shaded.gson.JsonObject;
-import net.risk.espproject.repository.impl.JwksApiRepository;
-
-import net.risk.espproject.util.KeyUtils;
+import net.risk.espproject.service.JwkSourceService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -38,15 +33,18 @@ import java.util.UUID;
 
 @Configuration
 @EnableWebSecurity
-public class SecurityConfig {
+public class Oauth2Config {
 
     @Value("${esp-client-userName}")
     String espClientUserName;
     @Value("${esp-client-password}")
     String espClientPassword;
+    JwkSourceService jwkSourceService;
 
     @Autowired
-    private JwksApiRepository jwksApiRepository;
+    public Oauth2Config(JwkSourceService jwkSourceService) {
+        this.jwkSourceService = jwkSourceService;
+    }
 
     @Bean
     public SecurityFilterChain authorizationServerSecurityFilterChain(HttpSecurity http) throws Exception {
@@ -79,12 +77,10 @@ public class SecurityConfig {
                 .tokenSettings(TokenSettings
                         .builder()
                         .accessTokenTimeToLive(Duration.ofMinutes(60))
-                        .refreshTokenTimeToLive(Duration.ofMinutes(60))
                         .build()
                 )
                 .authorizationGrantTypes(authorizationGrantTypes -> {
                     authorizationGrantTypes.add(AuthorizationGrantType.CLIENT_CREDENTIALS);
-                    authorizationGrantTypes.add(AuthorizationGrantType.REFRESH_TOKEN);
                 })
                 .scope("read")
                 .build();
@@ -94,25 +90,13 @@ public class SecurityConfig {
 
     @Bean
     public JWKSource<SecurityContext> jwkSource() {
-        String accAuth = "AccAuth";
-        JsonObject privateKeyRecord = jwksApiRepository.getPrivateKey(accAuth);
-
-        String x = privateKeyRecord.get("x").getAsString();
-        String y = privateKeyRecord.get("y").getAsString();
-        String d = privateKeyRecord.get("d").getAsString();
-        String kid = privateKeyRecord.get("kid").getAsString();
-
-        ECKey ecKey = KeyUtils.generateECKey(kid, x, y, d);
-
-        JWKSet jwkSet = new JWKSet(ecKey);
-        return (jwkSelector, securityContext) -> jwkSelector.select(jwkSet);
+        return jwkSourceService.getJwkSource();
     }
 
     @Bean
-    public JwtEncoder jwtEncoder(JWKSource<SecurityContext> jwkSource) {
-        return new NimbusJwtEncoder(jwkSource);
+    public JwtEncoder jwtEncoder() {
+        return new NimbusJwtEncoder(jwkSourceService.getJwkSource());
     }
-
     @Bean
     public OAuth2TokenCustomizer<JwtEncodingContext> jwtCustomizer() {
         return context -> {
