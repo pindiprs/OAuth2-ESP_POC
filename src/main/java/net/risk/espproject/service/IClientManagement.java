@@ -1,11 +1,9 @@
 package net.risk.espproject.service;
 
-import com.nimbusds.jose.jwk.JWK;
-
-import java.util.Set;
-
 public interface IClientManagement {
-    Set<JWK> getPublicKeys(String realm);
-    String getPrivateKey(String realm);
-    void managePublicKeys(String realm, Set<JWK> jwks);
+    String registerClient(String publicKey, String realm, String userName, String password);
+    String rotateClient(String publicKey, String realm, String userName, String password);
+    String retrieveClientID(String realm, String userName, String password);
+    boolean deleteClient(String realm, String userName, String password);
+
 }

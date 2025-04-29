@@ -1,5 +1,9 @@
 package net.risk.espproject.service;
 
+import com.nimbusds.jose.shaded.gson.JsonObject;
+
 public interface ITokenManagement {
-    String getToken(String userName, String clientId, String authorize_elements);
+    JsonObject getToken(String clientAuthenticationJWT, String grantType);
+    JsonObject getToken(String signedTokenWithTokenId);
 }
+

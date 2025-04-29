@@ -28,6 +28,11 @@ public class JwkSourceService {
         return cachedJwkSource;
     }
 
+    /**
+     * Create a JWK source from the private key record. This is fetched from the Database
+     * and then used to create a JWK source.
+     * @return
+     */
     public JWKSource<SecurityContext> createJwkSource() {
         String accAuth = "AccAuth";
         JsonObject privateKeyRecord = jwksApiRepository.getPrivateKey(accAuth);
