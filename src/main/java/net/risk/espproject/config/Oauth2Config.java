@@ -115,10 +115,4 @@ public class Oauth2Config {
             context.getClaims().claim("realm", realm);
         };
     }
-
-    @Bean
-    public AuthorizationServerSettings authorizationServerSettings() {
-        return AuthorizationServerSettings.builder()
-            .build();
-    }
 }
