@@ -12,10 +12,14 @@ public class RealmRequestWrapper extends HttpServletRequestWrapper {
         String contextPath = request.getContextPath();
         String requestUri = request.getRequestURI().substring(contextPath.length());
 
-        // Splitting and removing the realm segment
+        // Splitting and validating the realm segment
         String[] parts = requestUri.split("/");
+        if (parts.length < 2 || parts[1].isEmpty()) {
+            throw new IllegalArgumentException("Missing realm in the request URI");
+        }
+
+        // Removing the realm segment
         StringBuilder sb = new StringBuilder();
-        // Start at index 2 to skip the realm (index 1)
         for (int i = 2; i < parts.length; i++) {
             if (!parts[i].isEmpty()) {
                 sb.append("/").append(parts[i]);
