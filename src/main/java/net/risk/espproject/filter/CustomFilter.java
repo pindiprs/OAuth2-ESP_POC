@@ -22,21 +22,19 @@ public class CustomFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
         try {
+            // Wrap the request to modify the URI and servlet path
+            RealmRequestWrapper wrappedRequest = new RealmRequestWrapper(request);
             // Expecting URL: /{realm}/oauth2/token
             String[] parts = request.getRequestURI().split("/");
             if (parts.length > 1) {
                 String realm = parts[1];
                 logger.info("Setting realm: {}", realm);
                 RealmContextHolder.setRealm(realm);
-                request.getRequestDispatcher("/oauth2/token").forward(request, response);
+                request.getRequestDispatcher(wrappedRequest.getRequestURI()).forward(request, response);
                 return;
             }
 
-            // Wrap the request to modify the URI and servlet path
-            RealmRequestWrapper wrappedRequest = new RealmRequestWrapper(request);
-
             logger.info("Modified URI: {}", wrappedRequest.getRequestURI());
-            logger.info("Modified Servlet Path: {}", wrappedRequest.getServletPath());
             // Pass the wrapped request to the next filter
             filterChain.doFilter(wrappedRequest, response);
         } finally {

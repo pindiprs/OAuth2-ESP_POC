@@ -2,12 +2,12 @@ package net.risk.espproject.config;
 
 import net.risk.espproject.context.RealmContextHolder;
 import net.risk.espproject.filter.CustomFilter;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.oauth2.jwt.JwtEncoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtEncoder;
 import org.springframework.security.oauth2.jose.jws.SignatureAlgorithm;
-import org.springframework.security.oauth2.server.authorization.settings.AuthorizationServerSettings;
 import org.springframework.security.oauth2.server.authorization.settings.TokenSettings;
 import org.springframework.security.oauth2.server.authorization.token.OAuth2TokenCustomizer;
 import org.springframework.security.oauth2.server.authorization.token.JwtEncodingContext;
@@ -27,8 +27,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.oauth2.server.authorization.config.annotation.web.configurers.OAuth2AuthorizationServerConfigurer;
-import org.springframework.security.oauth2.server.authorization.web.OAuth2TokenEndpointFilter;
-import org.springframework.security.oauth2.server.resource.web.authentication.BearerTokenAuthenticationFilter;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.context.SecurityContextPersistenceFilter;
 
@@ -42,12 +40,12 @@ public class Oauth2Config {
     String espClientPassword;
 
     JwkSourceService jwkSourceService;
-    @Autowired
     CustomFilter customFilter;
 
     @Autowired
-    public Oauth2Config(JwkSourceService jwkSourceService) {
+    public Oauth2Config(JwkSourceService jwkSourceService, CustomFilter customFilter) {
         this.jwkSourceService = jwkSourceService;
+        this.customFilter = customFilter;
     }
 
 
