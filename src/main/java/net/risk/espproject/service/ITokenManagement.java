@@ -1,4 +1,4 @@
-package net.risk.espproject.command;
+package net.risk.espproject.service;
 
 import com.nimbusds.jose.shaded.gson.JsonObject;
 

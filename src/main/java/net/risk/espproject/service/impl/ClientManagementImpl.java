@@ -1,6 +1,6 @@
-package net.risk.espproject.command.impl;
+package net.risk.espproject.service.impl;
 
-import net.risk.espproject.command.IClientManagement;
+import net.risk.espproject.service.IClientManagement;
 
 public class ClientManagementImpl implements IClientManagement {
     @Override
@@ -10,7 +10,8 @@ public class ClientManagementImpl implements IClientManagement {
 
     @Override
     public String rotateClientKeys(String publicKey, String realm, String userName, String password) {
-        return "";
+        DbService dbService = new DbService();
+        return dbService.get();
     }
 
     @Override
