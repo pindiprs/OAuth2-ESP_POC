@@ -24,34 +24,6 @@ public class JwksApiRepository implements IJwksApiRepository {
     @Autowired
     DbConfig dbConfig;
 
-    /**
-     * This method is used to fetch all the metadata from the table
-     *
-     * @return SQL rows in String format
-     */
-    @Override
-    public String getAllMetaData() {
-        ObjectMapper mapper = new ObjectMapper();
-        ArrayNode arrayNode = mapper.createArrayNode();
-        try {
-            PreparedStatement result = dbConfig.dataSource()
-                    .getConnection()
-                    .prepareStatement("SELECT * FROM esp_oauth_test.oauth2_keys");
-            ResultSet resultSet = result.executeQuery();
-            ResultSetMetaData resultSetMetaData = resultSet.getMetaData();
-            while (resultSet.next()) {
-                ObjectNode objectNode = mapper.createObjectNode();
-                for (int i = 1; i <= resultSetMetaData.getColumnCount(); i++) {
-                    objectNode.put(resultSetMetaData.getColumnName(i), resultSet.getString(i));
-                }
-                arrayNode.add(objectNode);
-            }
-        } catch (SQLException e) {
-            log.error("Error while fetching data from database", e.getErrorCode());
-        }
-
-        return arrayNode.toString();
-    }
 
     /**
      * This method is used to fetch the public key from the table
@@ -114,11 +86,4 @@ public class JwksApiRepository implements IJwksApiRepository {
         return privateKeyJson;
 
     }
-
-    @Override
-    public void save(String data) {
-
-    }
-
-
 }
