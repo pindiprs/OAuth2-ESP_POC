@@ -94,7 +94,11 @@ public class Oauth2Config {
 
     @Bean
     public JWKSource<SecurityContext> jwkSource() {
-        return jwkSourceService.getJwkSource();
+        // update this with lazy loading using lambda dsl
+        return (jwkSelector, securityContext) -> {
+            String realm = RealmContextHolder.getRealm();
+            return jwkSourceService.getJwkSource().get(jwkSelector, securityContext);
+        };
     }
 
     @Bean

@@ -26,7 +26,7 @@ public class DaemonConfig {
         this.databaseService = databaseService;
     }
 
-    @Scheduled(fixedRate = 30)
+    @Scheduled(fixedRate = 86400000)
     public void updateData() {
         String realm = "AccAuth";
         // use this to call value from jwkRepository
