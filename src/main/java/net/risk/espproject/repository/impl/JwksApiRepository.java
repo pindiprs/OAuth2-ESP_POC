@@ -1,9 +1,5 @@
 package net.risk.espproject.repository.impl;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-
 import com.nimbusds.jose.shaded.gson.JsonObject;
 import com.nimbusds.jose.shaded.gson.JsonParser;
 import net.risk.espproject.config.DbConfig;
@@ -85,5 +81,31 @@ public class JwksApiRepository implements IJwksApiRepository {
         var privateKeyJson = JsonParser.parseString(privateKey.toString()).getAsJsonObject();
         return privateKeyJson;
 
+    }
+
+    public Map<String, String> getAllDataForRealm(String realm){
+        Map<String, String> records = new HashMap<>();
+
+        try {
+            PreparedStatement preparedStatement = dbConfig.dataSource()
+                    .getConnection()
+                    .prepareStatement("SELECT * FROM esp_oauth_test.oauth2_keys WHERE use_case = ?");
+            preparedStatement.setString(1, realm);
+
+           // get all the values and keep the column name as keys
+            ResultSet resultSet = preparedStatement.executeQuery();
+            while (resultSet.next()) {
+                records.put("kid", resultSet.getString("kid"));
+                records.put("private_key", resultSet.getString("private_key"));
+                records.put("public_key", resultSet.getString("public_key"));
+                records.put("date_expires", resultSet.getString("date_expire"));
+                records.put("date_added", resultSet.getString("date_added"));
+                records.put("status", resultSet.getString("status"));
+            }
+        } catch (SQLException e) {
+            log.error("Error while fetching data from database", e.getErrorCode());
+        }
+
+        return records;
     }
 }

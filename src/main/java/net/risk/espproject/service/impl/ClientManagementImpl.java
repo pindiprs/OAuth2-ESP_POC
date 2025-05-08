@@ -10,8 +10,7 @@ public class ClientManagementImpl implements IClientManagement {
 
     @Override
     public String rotateClientKeys(String publicKey, String realm, String userName, String password) {
-        DbService dbService = new DbService();
-        return dbService.get();
+        return "";
     }
 
     @Override
