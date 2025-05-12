@@ -19,7 +19,4 @@ public class RealmContextHolder {
     public static void clear() {
         realmContext.remove();
     }
-    /**
-     * realms/AccAuth/oauth2/token
-     */
 }

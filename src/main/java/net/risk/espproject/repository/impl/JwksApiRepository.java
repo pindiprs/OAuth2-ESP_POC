@@ -31,18 +31,18 @@ public class JwksApiRepository implements IJwksApiRepository {
      * JSON object containing the key details.
      * </p>
      *
-     * @param useCase the use case for which the public key is to be fetched
+     * @param realm the use case for which the public key is to be fetched
      * @return a {@link JsonObject} containing the public key details
      */
     @Override
-    public JsonObject getPublicKey(String useCase) {
+    public JsonObject getPublicKey(String realm) {
         Map<String, String> records = new HashMap<>();
 
         try {
             PreparedStatement result = dbConfig.dataSource()
                     .getConnection()
                     .prepareStatement("SELECT * FROM esp_oauth_test.oauth2_keys WHERE use_case = ?");
-            result.setString(1, useCase);
+            result.setString(1, realm);
             ResultSet resultSet = result.executeQuery();
 
             while (resultSet.next()) {
@@ -57,17 +57,17 @@ public class JwksApiRepository implements IJwksApiRepository {
         return publicKeyJson;
     }
 
-   /**
-    * Fetches the private key for a given realm from the database.
-    * <p>
-    * This method retrieves the private key associated with the specified realm
-    * from the `oauth2_keys` table in the database. The result is returned as a
-    * JSON object containing the key details.
-    * </p>
-    *
-    * @param realm the realm for which the private key is to be fetched
-    * @return a {@link JsonObject} containing the private key details
-    */
+    /**
+     * Fetches the private key for a given realm from the database.
+     * <p>
+     * This method retrieves the private key associated with the specified realm
+     * from the `oauth2_keys` table in the database. The result is returned as a
+     * JSON object containing the key details.
+     * </p>
+     *
+     * @param realm the realm for which the private key is to be fetched
+     * @return a {@link JsonObject} containing the private key details
+     */
     @Override
     public JsonObject getPrivateKey(String realm) {
         Map<String, String> records = new HashMap<>();
@@ -93,24 +93,24 @@ public class JwksApiRepository implements IJwksApiRepository {
 
     }
 
-    public Map<String, String> getAllDataForRealm(String realm){
-        Map<String, String> records = new HashMap<>();
+
+    public Map<String, Map<String, String>> getAllDataForRealm() {
+        Map<String, Map<String, String>> records = new HashMap<>();
 
         try {
             PreparedStatement preparedStatement = dbConfig.dataSource()
                     .getConnection()
-                    .prepareStatement("SELECT * FROM esp_oauth_test.oauth2_keys WHERE use_case = ?");
-            preparedStatement.setString(1, realm);
-
-           // get all the values and keep the column name as keys
+                    .prepareStatement("SELECT * FROM esp_oauth_test.oauth2_keys");
             ResultSet resultSet = preparedStatement.executeQuery();
+
             while (resultSet.next()) {
-                records.put("kid", resultSet.getString("kid"));
-                records.put("private_key", resultSet.getString("private_key"));
-                records.put("public_key", resultSet.getString("public_key"));
-                records.put("date_expires", resultSet.getString("date_expire"));
-                records.put("date_added", resultSet.getString("date_added"));
-                records.put("status", resultSet.getString("status"));
+                Map<String, String> record = new HashMap<>();
+                record.put("private_key", resultSet.getString("private_key"));
+                record.put("public_key", resultSet.getString("public_key"));
+                record.put("date_expire", resultSet.getString("date_expire"));
+                record.put("date_added", resultSet.getString("date_added"));
+                record.put("status", resultSet.getString("status"));
+                records.put(resultSet.getString("use_case"), record);
             }
         } catch (SQLException e) {
             log.error("Error while fetching data from database", e.getErrorCode());
