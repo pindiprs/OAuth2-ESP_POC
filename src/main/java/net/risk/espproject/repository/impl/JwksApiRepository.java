@@ -16,18 +16,23 @@ import java.util.Map;
 @Service
 public class JwksApiRepository implements IJwksApiRepository {
     Logger log = LoggerFactory.getLogger(JwksApiRepository.class);
+    private final DbConfig dbConfig;
 
     @Autowired
-    DbConfig dbConfig;
-
+    public JwksApiRepository(DbConfig dbConfig) {
+        this.dbConfig = dbConfig;
+    }
 
     /**
-     * This method is used to fetch the public key from the table
+     * Fetches the public key for a given use case from the database.
+     * <p>
+     * This method retrieves the public key associated with the specified use case
+     * from the `oauth2_keys` table in the database. The result is returned as a
+     * JSON object containing the key details.
+     * </p>
      *
-     * @return SQL rows in String format
-     * TODO:
-     *  1. This method returns normal json like JS object,
-     *  2. UseCase should be either scope, or relam
+     * @param useCase the use case for which the public key is to be fetched
+     * @return a {@link JsonObject} containing the public key details
      */
     @Override
     public JsonObject getPublicKey(String useCase) {
@@ -52,21 +57,26 @@ public class JwksApiRepository implements IJwksApiRepository {
         return publicKeyJson;
     }
 
-    /**
-     * This method is used to fetch the private key from the table
-     *
-     * @return SQL rows in String format
-     * TODO: This method returns normal json like JS object
-     */
+   /**
+    * Fetches the private key for a given realm from the database.
+    * <p>
+    * This method retrieves the private key associated with the specified realm
+    * from the `oauth2_keys` table in the database. The result is returned as a
+    * JSON object containing the key details.
+    * </p>
+    *
+    * @param realm the realm for which the private key is to be fetched
+    * @return a {@link JsonObject} containing the private key details
+    */
     @Override
-    public JsonObject getPrivateKey(String useCase) {
+    public JsonObject getPrivateKey(String realm) {
         Map<String, String> records = new HashMap<>();
 
         try {
             PreparedStatement preparedStatement = dbConfig.dataSource()
                     .getConnection()
                     .prepareStatement("SELECT * FROM esp_oauth_test.oauth2_keys WHERE use_case = ?");
-            preparedStatement.setString(1, useCase);
+            preparedStatement.setString(1, realm);
 
             ResultSet resultSet = preparedStatement.executeQuery();
             while (resultSet.next()) {

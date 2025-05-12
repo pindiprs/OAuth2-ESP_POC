@@ -35,18 +35,16 @@ public class DbService {
         String status = resultSet.get("status");
         int statusInt = Integer.parseInt(status);
 
-        for (String key : resultSet.keySet()) {
-            if (KEY_STATUS.ACTIVE == KeyUtils.checkStatus(statusInt)) {
-                // Parse the date_expires string to Instant
-                String expireDateString = resultSet.get("date_expires");
-                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-                LocalDateTime localDateTime = LocalDateTime.parse(expireDateString, formatter);
-                Instant expireDate = localDateTime.toInstant(ZoneOffset.UTC);
+        if (KEY_STATUS.ACTIVE == KeyUtils.checkStatus(statusInt)) {
+            // Parse the date_expires string to Instant
+            String expireDateString = resultSet.get("date_expires");
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+            LocalDateTime localDateTime = LocalDateTime.parse(expireDateString, formatter);
+            Instant expireDate = localDateTime.toInstant(ZoneOffset.UTC);
 
-                // Check if the expiry time is less than 48 hrs
-                if (expireDate.isBefore(Instant.now().plus(48, ChronoUnit.HOURS))) {
-                    rotateKeys(realm);
-                }
+            // Check if the expiry time is less than 48 hrs
+            if (expireDate.isBefore(Instant.now().plus(48, ChronoUnit.HOURS))) {
+                rotateKeys(realm);
             }
         }
     }
