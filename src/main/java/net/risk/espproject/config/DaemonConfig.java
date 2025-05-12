@@ -1,6 +1,6 @@
 package net.risk.espproject.config;
 
-import net.risk.espproject.service.impl.KeyRotationService;
+import net.risk.espproject.service.impl.KeyManagementImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,10 +13,10 @@ import org.springframework.scheduling.annotation.Scheduled;
 public class DaemonConfig {
      private final Logger logger = LoggerFactory.getLogger(DaemonConfig.class);
 
-    private final KeyRotationService keyRotationService;
+    private final KeyManagementImpl keyRotationService;
 
     @Autowired
-    public DaemonConfig(KeyRotationService keyRotationService) {
+    public DaemonConfig(KeyManagementImpl keyRotationService) {
         this.keyRotationService = keyRotationService;
     }
 

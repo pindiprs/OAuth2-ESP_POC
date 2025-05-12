@@ -1,5 +1,6 @@
 package net.risk.espproject.config;
 
+import lombok.extern.slf4j.Slf4j;
 import net.risk.espproject.context.RealmContextHolder;
 import net.risk.espproject.filter.CustomFilter;
 
@@ -11,9 +12,7 @@ import org.springframework.security.oauth2.jose.jws.SignatureAlgorithm;
 import org.springframework.security.oauth2.server.authorization.settings.TokenSettings;
 import org.springframework.security.oauth2.server.authorization.token.OAuth2TokenCustomizer;
 import org.springframework.security.oauth2.server.authorization.token.JwtEncodingContext;
-import java.time.Duration;
-import java.time.Instant;
-import java.util.UUID;
+
 import org.springframework.security.oauth2.core.AuthorizationGrantType;
 import org.springframework.security.oauth2.core.ClientAuthenticationMethod;
 import org.springframework.security.oauth2.server.authorization.client.RegisteredClient;
@@ -28,8 +27,13 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.oauth2.server.authorization.config.annotation.web.configurers.OAuth2AuthorizationServerConfigurer;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.context.SecurityContextPersistenceFilter;
+import org.springframework.security.web.context.request.async.WebAsyncManagerIntegrationFilter;
 
+import java.time.Duration;
+import java.time.Instant;
+import java.util.UUID;
+
+@Slf4j
 @Configuration
 public class Oauth2Config {
 
@@ -48,14 +52,13 @@ public class Oauth2Config {
         this.customFilter = customFilter;
     }
 
-
     @Bean
     public SecurityFilterChain authorizationServerSecurityFilterChain(HttpSecurity http) throws Exception {
         OAuth2AuthorizationServerConfigurer authorizationServerConfigurer =
                 OAuth2AuthorizationServerConfigurer.authorizationServer();
         http
                 .securityMatcher(authorizationServerConfigurer.getEndpointsMatcher())
-                .addFilterBefore(customFilter, SecurityContextPersistenceFilter.class)
+                .addFilterAfter(customFilter, WebAsyncManagerIntegrationFilter.class)
                 .with(authorizationServerConfigurer, (authServer) -> {
                     authServer
                             .oidc(Customizer.withDefaults())
@@ -96,7 +99,6 @@ public class Oauth2Config {
     public JWKSource<SecurityContext> jwkSource() {
         // update this with lazy loading using lambda dsl
         return (jwkSelector, securityContext) -> {
-            String realm = RealmContextHolder.getRealm();
             return jwkSourceService.getJwkSource().get(jwkSelector, securityContext);
         };
     }
