@@ -18,12 +18,6 @@ public class TempEndPoint {
 
     String useCase = "AccAuth";
 
-    @GetMapping(value = "/getAll", produces = "application/json")
-    public ResponseEntity<String> getAllData() throws JsonProcessingException {
-        String result = jwksApiRepository.getAllMetaData();
-        return ResponseEntity.ok(result);
-    }
-
     @GetMapping(value = "/getPublicKey", produces = "application/json")
     public ResponseEntity<String> getPublicKey()throws JsonProcessingException {
         JsonObject result = jwksApiRepository.getPublicKey(useCase);

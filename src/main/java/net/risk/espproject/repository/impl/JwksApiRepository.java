@@ -1,9 +1,5 @@
 package net.risk.espproject.repository.impl;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-
 import com.nimbusds.jose.shaded.gson.JsonObject;
 import com.nimbusds.jose.shaded.gson.JsonParser;
 import net.risk.espproject.config.DbConfig;
@@ -24,34 +20,6 @@ public class JwksApiRepository implements IJwksApiRepository {
     @Autowired
     DbConfig dbConfig;
 
-    /**
-     * This method is used to fetch all the metadata from the table
-     *
-     * @return SQL rows in String format
-     */
-    @Override
-    public String getAllMetaData() {
-        ObjectMapper mapper = new ObjectMapper();
-        ArrayNode arrayNode = mapper.createArrayNode();
-        try {
-            PreparedStatement result = dbConfig.dataSource()
-                    .getConnection()
-                    .prepareStatement("SELECT * FROM esp_oauth_test.oauth2_keys");
-            ResultSet resultSet = result.executeQuery();
-            ResultSetMetaData resultSetMetaData = resultSet.getMetaData();
-            while (resultSet.next()) {
-                ObjectNode objectNode = mapper.createObjectNode();
-                for (int i = 1; i <= resultSetMetaData.getColumnCount(); i++) {
-                    objectNode.put(resultSetMetaData.getColumnName(i), resultSet.getString(i));
-                }
-                arrayNode.add(objectNode);
-            }
-        } catch (SQLException e) {
-            log.error("Error while fetching data from database", e.getErrorCode());
-        }
-
-        return arrayNode.toString();
-    }
 
     /**
      * This method is used to fetch the public key from the table
@@ -115,10 +83,29 @@ public class JwksApiRepository implements IJwksApiRepository {
 
     }
 
-    @Override
-    public void save(String data) {
+    public Map<String, String> getAllDataForRealm(String realm){
+        Map<String, String> records = new HashMap<>();
 
+        try {
+            PreparedStatement preparedStatement = dbConfig.dataSource()
+                    .getConnection()
+                    .prepareStatement("SELECT * FROM esp_oauth_test.oauth2_keys WHERE use_case = ?");
+            preparedStatement.setString(1, realm);
+
+           // get all the values and keep the column name as keys
+            ResultSet resultSet = preparedStatement.executeQuery();
+            while (resultSet.next()) {
+                records.put("kid", resultSet.getString("kid"));
+                records.put("private_key", resultSet.getString("private_key"));
+                records.put("public_key", resultSet.getString("public_key"));
+                records.put("date_expires", resultSet.getString("date_expire"));
+                records.put("date_added", resultSet.getString("date_added"));
+                records.put("status", resultSet.getString("status"));
+            }
+        } catch (SQLException e) {
+            log.error("Error while fetching data from database", e.getErrorCode());
+        }
+
+        return records;
     }
-
-
 }
