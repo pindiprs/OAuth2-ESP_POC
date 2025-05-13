@@ -13,13 +13,10 @@ public class RealmContextHolder {
     }
 
     public static String getRealm() {
-        return realmContext.get() != null ? realmContext.get() : "AccAuth"; // Default fallback
+        return realmContext.get();
     }
 
     public static void clear() {
         realmContext.remove();
     }
-    /**
-     * realms/AccAuth/oauth2/token
-     */
 }

@@ -25,28 +25,35 @@ public class JwkSourceService {
         this.jwksApiRepository = jwksApiRepository;
     }
 
-    public JWKSource<SecurityContext> getJwkSource() {
-        String realm = RealmContextHolder.getRealm();
-        return jwkSourceCache.computeIfAbsent(realm, this::createJwkSource);
-    }
 
     /**
-     * Create a JWK source from the private key record. This is fetched from the Database
-     * based on the current realm context.
-     * @param realm the realm to use for fetching the key
-     * @return JWKSource for the specified realm
+     * Lazily retrieves the JWK source for the current realm.
+     * <p>
+     * This method uses lazy loading to fetch the JWK source based on the realm
+     * set in the {@link RealmContextHolder}. It ensures that the JWK source
+     * is dynamically created for the specific realm context when accessed.
+     * </p>
+     *
+     * @return a {@link JWKSource} instance for the current realm
      */
-    public JWKSource<SecurityContext> createJwkSource(String realm) {
-        JsonObject privateKeyRecord = jwksApiRepository.getPrivateKey(realm);
-
-        String x = privateKeyRecord.get("x").getAsString();
-        String y = privateKeyRecord.get("y").getAsString();
-        String d = privateKeyRecord.get("d").getAsString();
-        String kid = privateKeyRecord.get("kid").getAsString();
-
-        ECKey ecKey = KeyUtils.generateECKey(kid, x, y, d);
-        JWKSet jwkSet = new JWKSet(ecKey);
-
-        return (jwkSelector, securityContext) -> jwkSelector.select(jwkSet);
+    public JWKSource<SecurityContext> getJwkSource() {
+        return getJwkSourceForRealm();
     }
+
+    private JWKSource<SecurityContext> getJwkSourceForRealm() {
+        return (jwkSelector, securityContext) -> {
+            String realm = RealmContextHolder.getRealm();
+            JsonObject privateKeyRecord = jwksApiRepository.getPrivateKey(realm);
+            String x = privateKeyRecord.get("x").getAsString();
+            String y = privateKeyRecord.get("y").getAsString();
+            String d = privateKeyRecord.get("d").getAsString();
+            String kid = privateKeyRecord.get("kid").getAsString();
+
+            ECKey ecKey = KeyUtils.generateECKey(kid, x, y, d);
+            JWKSet jwkSet = new JWKSet(ecKey);
+            return jwkSelector.select(jwkSet);
+        };
+    }
+
+
 }

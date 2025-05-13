@@ -18,24 +18,34 @@ public class CustomFilter extends OncePerRequestFilter {
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
+    /**
+     * Filters the incoming HTTP request, extracts the realm from the URI, and sets it in the context.
+     * If the realm is not found or invalid, an exception is thrown.
+     *
+     * @param request  the incoming HTTP request
+     * @param response the HTTP response
+     * @param filterChain the filter chain to pass the request and response to the next filter
+     * @throws ServletException if the realm is not found in the URI or other processing errors occur
+     * @throws IOException if an I/O error occurs during request processing
+     */
+
    @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
         try {
-            // Wrap the request to modify the URI and servlet path
             RealmRequestWrapper wrappedRequest = new RealmRequestWrapper(request);
-            // Expecting URL: /{realm}/oauth2/token
             String[] parts = request.getRequestURI().split("/");
-            if (parts.length > 1) {
-                String realm = parts[1];
-                logger.info("Setting realm: {}", realm);
-                RealmContextHolder.setRealm(realm);
-                request.getRequestDispatcher(wrappedRequest.getRequestURI()).forward(request, response);
-                return;
+            String realm = parts[1];
+            if (realm.equals("oauth2")) {
+                logger.error("Realm not found in URL: {}", request.getRequestURI());
+                throw new ServletException("Realm not found in URL: " + request.getRequestURI());
             }
 
+            logger.info("Setting realm: {}", realm);
+            RealmContextHolder.setRealm(realm);
+            request.getRequestDispatcher(wrappedRequest.getRequestURI()).forward(request, response);
+
             logger.info("Modified URI: {}", wrappedRequest.getRequestURI());
-            // Pass the wrapped request to the next filter
             filterChain.doFilter(wrappedRequest, response);
         } finally {
             // Clear the realm context to avoid thread-local leaks

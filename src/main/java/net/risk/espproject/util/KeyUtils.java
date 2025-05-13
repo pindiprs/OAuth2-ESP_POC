@@ -7,6 +7,11 @@ import com.nimbusds.jose.util.Base64URL;
 import lombok.experimental.UtilityClass;
 import net.risk.espproject.constant.KEY_STATUS;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
+import java.util.Map;
+
 @UtilityClass
 public class KeyUtils {
     public static ECKey generateECKey(String kid, String x, String y, String d) {
@@ -28,5 +33,28 @@ public class KeyUtils {
             case 3 -> KEY_STATUS.OBSOLETE;
             default -> throw new IllegalArgumentException("Invalid status: " + statusInt);
         };
+    }
+
+    public static boolean rotateKeys(String realm, Map<String, String> resultSet) {
+
+        KEY_STATUS currentStatus = KeyUtils.checkStatus(Integer.parseInt(resultSet.get("status")));
+        if(currentStatus == KEY_STATUS.OBSOLETE) {
+            // delete the keys
+        }
+        if(currentStatus == KEY_STATUS.ACTIVE) {
+            if(hasKeyExpired(resultSet)){
+                // create new active key
+                // create new future key
+            }
+        }
+        return false;
+    }
+
+    private static boolean hasKeyExpired(Map<String, String> resultSet) {
+        String expiredAt = resultSet.get("date_expire");
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"); // Custom format
+        LocalDateTime expiredAtTime = LocalDateTime.parse(expiredAt, formatter);
+        long hoursUntilExpired = LocalDateTime.now().until(expiredAtTime, ChronoUnit.HOURS);
+        return hoursUntilExpired <= 48;
     }
 }
