@@ -8,10 +8,12 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 
+import static net.risk.espproject.constant.AuthConfigConstants.REFRESH_TIME_IN_MILLI_SEC;
+
 @Configuration
 @EnableScheduling
 public class DaemonConfig {
-     private final Logger logger = LoggerFactory.getLogger(DaemonConfig.class);
+    private final Logger logger = LoggerFactory.getLogger(DaemonConfig.class);
 
     private final KeyManagementImpl keyRotationService;
 
@@ -20,7 +22,7 @@ public class DaemonConfig {
         this.keyRotationService = keyRotationService;
     }
 
-    @Scheduled(fixedRate = 86400000)
+    @Scheduled(fixedRate = REFRESH_TIME_IN_MILLI_SEC)
     public void updateData() {
         keyRotationService.updateKeys();
     }
