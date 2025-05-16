@@ -1,4 +1,4 @@
-package net.risk.espproject.service;
+package net.risk.espproject.service.impl;
 
 import com.nimbusds.jose.jwk.ECKey;
 import com.nimbusds.jose.jwk.JWKSet;
@@ -6,7 +6,6 @@ import com.nimbusds.jose.jwk.source.JWKSource;
 import com.nimbusds.jose.proc.SecurityContext;
 import com.nimbusds.jose.shaded.gson.JsonObject;
 import net.risk.espproject.context.RealmContextHolder;
-import net.risk.espproject.repository.impl.JwksApiRepository;
 import net.risk.espproject.util.KeyUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -17,12 +16,12 @@ import java.util.concurrent.ConcurrentHashMap;
 @Service
 public class JwkSourceService {
 
-    private final JwksApiRepository jwksApiRepository;
+    private final KeyManagementImpl keyManagement;
     private final Map<String, JWKSource<SecurityContext>> jwkSourceCache = new ConcurrentHashMap<>();
 
     @Autowired
-    public JwkSourceService(JwksApiRepository jwksApiRepository) {
-        this.jwksApiRepository = jwksApiRepository;
+    public JwkSourceService(KeyManagementImpl keyManagement) {
+        this.keyManagement = keyManagement;
     }
 
 
@@ -37,13 +36,9 @@ public class JwkSourceService {
      * @return a {@link JWKSource} instance for the current realm
      */
     public JWKSource<SecurityContext> getJwkSource() {
-        return getJwkSourceForRealm();
-    }
-
-    private JWKSource<SecurityContext> getJwkSourceForRealm() {
         return (jwkSelector, securityContext) -> {
             String realm = RealmContextHolder.getRealm();
-            JsonObject privateKeyRecord = jwksApiRepository.getPrivateKey(realm);
+            JsonObject privateKeyRecord = keyManagement.getPrivateKey(realm);
             String x = privateKeyRecord.get("x").getAsString();
             String y = privateKeyRecord.get("y").getAsString();
             String d = privateKeyRecord.get("d").getAsString();

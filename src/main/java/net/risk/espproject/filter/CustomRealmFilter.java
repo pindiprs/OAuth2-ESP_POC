@@ -14,7 +14,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 
 @Component
-public class CustomFilter extends OncePerRequestFilter {
+public class CustomRealmFilter extends OncePerRequestFilter {
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
