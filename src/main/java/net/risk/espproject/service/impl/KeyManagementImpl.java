@@ -28,7 +28,7 @@ public class KeyManagementImpl implements IKeyManagement {
     }
 
     @Override
-    public void manageTokenKeys() {}
+    public void manageTokenKeys() { updateKeysForAllRealms();}
 
     private final String GET_TOKEN_KEYS_USING_REALM = "SELECT * FROM esp_oauth_test.oauth2_keys WHERE use_case = ?";
     @Override
@@ -117,14 +117,6 @@ public class KeyManagementImpl implements IKeyManagement {
     @Override
     public boolean setIdentityServerURI(String realm, String URI) {
         return false;
-    }
-
-    /**
-     * Update the keys for all realms.<br/>
-     * TODO: Delete this method once the scheduled task is implemented. and use the methods defined in interface
-     */
-    public void updateKeys() {
-        updateKeysForAllRealms();
     }
 
     private void updateKeysForAllRealms() {

@@ -24,6 +24,6 @@ public class DaemonConfig {
 
     @Scheduled(fixedRate = REFRESH_TIME_IN_MILLI_SEC)
     public void updateData() {
-        keyRotationService.updateKeys();
+        keyRotationService.manageTokenKeys();
     }
 }
