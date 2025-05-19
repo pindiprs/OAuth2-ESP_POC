@@ -10,9 +10,9 @@ import javax.sql.DataSource;
 @Configuration
 public class DbConfig {
 
-    @Value("${oauth2.datasource.url}") String dataSourceUrl;
-    @Value("${oauth2.datasource.username}") String dataSourceUsername;
-    @Value("${oauth2.datasource.password}") String dataSourcePassword;
+    @Value("${phi.auth.datasource.url}") String dataSourceUrl;
+    @Value("${phi.auth.datasource.username}") String dataSourceUsername;
+    @Value("${phi.auth.datasource.password}") String dataSourcePassword;
 
     @Bean
     public DataSource dataSource() {
