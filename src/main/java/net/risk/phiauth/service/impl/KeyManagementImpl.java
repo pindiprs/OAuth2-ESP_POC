@@ -1,11 +1,11 @@
-package net.risk.espproject.service.impl;
-
+package net.risk.phiauth.service.impl;
 
 import com.nimbusds.jose.shaded.gson.JsonObject;
 import com.nimbusds.jose.shaded.gson.JsonParser;
 import lombok.extern.slf4j.Slf4j;
-import net.risk.espproject.config.DbConfig;
-import net.risk.espproject.service.IKeyManagement;
+import net.risk.phiauth.config.DbConfig;
+import net.risk.phiauth.constant.SQLQueriesConstants;
+import net.risk.phiauth.service.IKeyManagement;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -15,7 +15,9 @@ import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
 
-import net.risk.espproject.util.KeyUtils;
+import net.risk.phiauth.util.KeyUtils;
+
+import static net.risk.phiauth.constant.SQLQueriesConstants.GET_TOKEN_KEYS_USING_REALM;
 
 @Slf4j
 @Service
@@ -30,7 +32,7 @@ public class KeyManagementImpl implements IKeyManagement {
     @Override
     public void manageTokenKeys() { updateKeysForAllRealms();}
 
-    private final String GET_TOKEN_KEYS_USING_REALM = "SELECT * FROM esp_oauth_test.oauth2_keys WHERE use_case = ?";
+
     @Override
     public JsonObject getTokenPublicKeys(String realm) {
         Map<String, String> records = new HashMap<>();
@@ -46,7 +48,7 @@ public class KeyManagementImpl implements IKeyManagement {
                 records.put("public_key", resultSet.getString("public_key"));
             }
         } catch (SQLException e) {
-            log.error("Error while fetching data from database", e.getErrorCode());
+            log.error("Error while fetching data for realm {}. Error code: {}", realm, e.getErrorCode(), e);
         }
         var publicKey = records.get("public_key");
         var publicKeyJson = JsonParser.parseString(publicKey.toString()).getAsJsonObject();
@@ -120,8 +122,8 @@ public class KeyManagementImpl implements IKeyManagement {
     }
 
     private void updateKeysForAllRealms() {
-        Map<String, Map<String, String>> resultSet = getAllDataForRealm();
-        for (Map.Entry<String, Map<String, String>> entry : resultSet.entrySet()) {
+        Map<String, Map<String, String>> realmMap = getAllDataForRealm();
+        for (Map.Entry<String, Map<String, String>> entry : realmMap.entrySet()) {
             String realm = entry.getKey();
             Map<String, String> keysRecords = entry.getValue();
             if (KeyUtils.rotateKeys(realm, keysRecords)) {
@@ -136,9 +138,10 @@ public class KeyManagementImpl implements IKeyManagement {
         Map<String, Map<String, String>> records = new HashMap<>();
 
         try {
+
             PreparedStatement preparedStatement = dbConfig.dataSource()
                     .getConnection()
-                    .prepareStatement("SELECT * FROM esp_oauth_test.oauth2_keys");
+                    .prepareStatement(SQLQueriesConstants.ALL_DATA_FROM_REALM);
             ResultSet resultSet = preparedStatement.executeQuery();
 
             while (resultSet.next()) {

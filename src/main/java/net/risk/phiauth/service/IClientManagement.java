@@ -1,4 +1,4 @@
-package net.risk.espproject.service;
+package net.risk.phiauth.service;
 
 public interface IClientManagement {
     String registerClient(String publicKey, String realm, String userName, String password);

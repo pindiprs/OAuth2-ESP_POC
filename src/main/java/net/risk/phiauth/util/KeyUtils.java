@@ -1,16 +1,18 @@
-package net.risk.espproject.util;
+package net.risk.phiauth.util;
 
 import com.nimbusds.jose.Algorithm;
 import com.nimbusds.jose.jwk.Curve;
 import com.nimbusds.jose.jwk.ECKey;
 import com.nimbusds.jose.util.Base64URL;
 import lombok.experimental.UtilityClass;
-import net.risk.espproject.constant.KEY_STATUS;
+import net.risk.phiauth.constant.KEY_STATUS;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.Map;
+
+import static net.risk.phiauth.constant.AuthConfigConstants.SIGNING_ALG;
 
 @UtilityClass
 public class KeyUtils {
@@ -22,7 +24,7 @@ public class KeyUtils {
         )
                 .d(new Base64URL(d))
                 .keyID(kid)
-                .algorithm(new Algorithm("ES256"))
+                .algorithm(new Algorithm(SIGNING_ALG))
                 .build();
     }
     public static KEY_STATUS checkStatus(int statusInt) {
@@ -35,14 +37,14 @@ public class KeyUtils {
         };
     }
 
-    public static boolean rotateKeys(String realm, Map<String, String> resultSet) {
+    public static boolean rotateKeys(String realm, Map<String, String> realmMap) {
 
-        KEY_STATUS currentStatus = KeyUtils.checkStatus(Integer.parseInt(resultSet.get("status")));
+        KEY_STATUS currentStatus = KeyUtils.checkStatus(Integer.parseInt(realmMap.get("status")));
         if(currentStatus == KEY_STATUS.OBSOLETE) {
             // delete the keys
         }
         if(currentStatus == KEY_STATUS.ACTIVE) {
-            if(hasKeyExpired(resultSet)){
+            if(isKeyExpired(realmMap)){
                 // create new active key
                 // create new future key
             }
@@ -50,8 +52,8 @@ public class KeyUtils {
         return false;
     }
 
-    private static boolean hasKeyExpired(Map<String, String> resultSet) {
-        String expiredAt = resultSet.get("date_expire");
+    private static boolean isKeyExpired(Map<String, String> realmMap) {
+        String expiredAt = realmMap.get("date_expire");
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"); // Custom format
         LocalDateTime expiredAtTime = LocalDateTime.parse(expiredAt, formatter);
         long hoursUntilExpired = LocalDateTime.now().until(expiredAtTime, ChronoUnit.HOURS);

@@ -1,4 +1,4 @@
-package net.risk.espproject;
+package net.risk.phiauth;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;

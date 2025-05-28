@@ -1,4 +1,4 @@
-package net.risk.espproject.constant;
+package net.risk.phiauth.constant;
 
 public enum KEY_STATUS {
     ACTIVE,

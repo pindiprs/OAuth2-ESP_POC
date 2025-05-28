@@ -1,6 +1,6 @@
-package net.risk.espproject.service.impl;
+package net.risk.phiauth.service.impl;
 
-import net.risk.espproject.service.IClientManagement;
+import net.risk.phiauth.service.IClientManagement;
 
 public class ClientManagementImpl implements IClientManagement {
     @Override

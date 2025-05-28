@@ -1,4 +1,4 @@
-package net.risk.espproject;
+package net.risk.phiauth;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

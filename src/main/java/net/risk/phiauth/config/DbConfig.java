@@ -1,4 +1,4 @@
-package net.risk.espproject.config;
+package net.risk.phiauth.config;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.jdbc.DataSourceBuilder;

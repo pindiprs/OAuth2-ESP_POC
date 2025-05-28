@@ -1,4 +1,4 @@
-package net.risk.espproject.util;
+package net.risk.phiauth.util;
 
 import jakarta.servlet.http.HttpServletRequest;
 import org.junit.jupiter.api.DisplayName;
@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class RealmRequestWrapperTest {
 
@@ -28,7 +29,7 @@ class RealmRequestWrapperTest {
         Mockito.when(mockRequest.getRequestURI()).thenReturn("/oauth2/token");
 
         IllegalArgumentException exception =
-                org.junit.jupiter.api.Assertions.assertThrows(IllegalArgumentException.class,
+                assertThrows(IllegalArgumentException.class,
                         () -> new RealmRequestWrapper(mockRequest));
 
         assertEquals("Missing realm in the request URI", exception.getMessage());
