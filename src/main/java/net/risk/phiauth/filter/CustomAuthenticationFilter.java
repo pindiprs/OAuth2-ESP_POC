@@ -20,7 +20,7 @@ import java.io.IOException;
 import java.util.Map;
 
 @Component
-public class CustomIdentityFilter extends OncePerRequestFilter {
+public class CustomAuthenticationFilter extends OncePerRequestFilter {
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
     private final JdbcTemplate jdbcTemplate;
@@ -32,9 +32,9 @@ public class CustomIdentityFilter extends OncePerRequestFilter {
     @Value("${phi.authentication.client-secret}")
     private String credential;
 
-    private static final String IDENTITY_VERIFICATION_SPROC = "{call sp_aac_authorize_v3(:userId, :credential)}";
+    private static final String IDENTITY_VERIFICATION_SPROC = "{call sp_aac_authorize_v3()}";
 
-    public CustomIdentityFilter(DbConfig dbConfig, Map<String, String> envCache) {
+    public CustomAuthenticationFilter(DbConfig dbConfig, Map<String, String> envCache) {
         this.envCache = envCache;
         // Create JdbcTemplate using the appropriate datasource
         String url = envCache.get(DBConfigKeys.ACCURINT_URL_KEY);
