@@ -1,8 +1,8 @@
 package net.risk.phiauth.config;
 
 import lombok.extern.slf4j.Slf4j;
-import net.risk.phiauth.constant.OidcCustomClaims;
 import net.risk.phiauth.context.RealmContextHolder;
+import net.risk.phiauth.filter.CustomAuthenticationFilter;
 import net.risk.phiauth.filter.CustomRealmFilter;
 import net.risk.phiauth.service.impl.JwkSourceService;
 
@@ -11,8 +11,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.oauth2.jwt.JwtEncoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtEncoder;
 import org.springframework.security.oauth2.jose.jws.SignatureAlgorithm;
-import org.springframework.security.oauth2.server.authorization.oidc.OidcProviderConfiguration;
-import org.springframework.security.oauth2.server.authorization.settings.AuthorizationServerSettings;
 import org.springframework.security.oauth2.server.authorization.settings.TokenSettings;
 import org.springframework.security.oauth2.server.authorization.token.OAuth2TokenCustomizer;
 import org.springframework.security.oauth2.server.authorization.token.JwtEncodingContext;
@@ -33,9 +31,6 @@ import org.springframework.security.web.context.request.async.WebAsyncManagerInt
 
 import java.time.Duration;
 import java.time.Instant;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.UUID;
 
 import static net.risk.phiauth.constant.AuthConfigConstants.TOKEN_DURATION_IN_SEC;
@@ -50,31 +45,18 @@ public class Oauth2Config {
     @Value("${esp-client-password}")
     String espClientPassword;
 
-    @Value("${phi.auth.oidc.issuer.base-url}")
-    private String issuerBaseUrl;
-
-    @Value("${phi.oauth.authorization-endpoint}")
-    private String authorizationEndpoint;
-
-    @Value("${phi.oauth.token-endpoint}")
-    private String tokenEndpoint;
-
-    @Value("${phi.oauth.token-revocation-endpoint}")
-    private String tokenRevocationEndpoint;
-
-    @Value("${phi.oauth.jwks-endpoint}")
-    private String jwksEndpoint;
-
-    @Value("${phi.oauth.introspection-endpoint}")
-    private String introspectionEndpoint;
+    @Autowired
+    private OidcCustomConfig oidcServerConfig;
 
     private final JwkSourceService jwkSourceService;
     private final CustomRealmFilter customRealmFilter;
+    private final CustomAuthenticationFilter customAuthenticationFilter;
 
     @Autowired
-    public Oauth2Config(JwkSourceService jwkSourceService, CustomRealmFilter customRealmFilter) {
+    public Oauth2Config(JwkSourceService jwkSourceService, CustomRealmFilter customRealmFilter, CustomAuthenticationFilter customAuthenticationFilter) {
         this.jwkSourceService = jwkSourceService;
         this.customRealmFilter = customRealmFilter;
+        this.customAuthenticationFilter = customAuthenticationFilter;
     }
 
     @Bean
@@ -83,12 +65,13 @@ public class Oauth2Config {
                 OAuth2AuthorizationServerConfigurer.authorizationServer();
 
         http
-                .addFilterAfter(customRealmFilter, WebAsyncManagerIntegrationFilter.class)
+                .addFilterAfter(customAuthenticationFilter, WebAsyncManagerIntegrationFilter.class)
+                .addFilterAfter(customRealmFilter, CustomAuthenticationFilter.class)
                 .with(authorizationServerConfigurer, (authServer) -> {
                     authServer.oidc(oidc ->
                             oidc.providerConfigurationEndpoint(providerConfigurationEndpoint ->
-                                    // Lazy load the realm and issuer configuration
-                                    providerConfigurationEndpoint.providerConfigurationCustomizer(this::oidcConfiguration)
+                                    // Use the method from the new class
+                                    providerConfigurationEndpoint.providerConfigurationCustomizer(oidcServerConfig::oidcConfiguration)
                             )
                     );
                     authServer.registeredClientRepository(registeredClientRepository());
@@ -136,46 +119,5 @@ public class Oauth2Config {
             String realm = RealmContextHolder.getRealm();
             context.getClaims().claim("realm", realm);
         };
-    }
-    @Bean
-    public AuthorizationServerSettings authorizationServerSettings() {
-        String realm = RealmContextHolder.getRealm();
-
-        return AuthorizationServerSettings.builder()
-            .issuer(issuerBaseUrl + "/" + realm)
-            .jwkSetEndpoint(jwksEndpoint)
-            .tokenEndpoint(tokenEndpoint)
-            .tokenRevocationEndpoint(tokenRevocationEndpoint)
-            .tokenIntrospectionEndpoint(introspectionEndpoint)
-            .authorizationEndpoint(authorizationEndpoint)
-            .build();
-    }
-
-    private void oidcConfiguration(OidcProviderConfiguration.Builder builder) {
-        String realm = RealmContextHolder.getRealm();
-
-        // First, create a map with only the claims we want
-        Map<String, Object> customClaims = new HashMap<>();
-
-        customClaims.put(OidcCustomClaims.AUTHORIZATION_ENDPOINT, issuerBaseUrl + "/" + realm + authorizationEndpoint);
-        customClaims.put(OidcCustomClaims.ISSUER, issuerBaseUrl + "/" + realm);
-        customClaims.put(OidcCustomClaims.JWKS_URI, issuerBaseUrl + "/" + realm + jwksEndpoint);
-        customClaims.put(OidcCustomClaims.RESPONSE_TYPES_SUPPORTED, Collections.singletonList("token"));
-        customClaims.put(OidcCustomClaims.TOKEN_ENDPOINT, issuerBaseUrl + "/" + realm + tokenEndpoint);
-        customClaims.put(OidcCustomClaims.TOKEN_ENDPOINT_AUTH_METHODS_SUPPORTED, Collections.singletonList("client_secret_post"));
-        customClaims.put(OidcCustomClaims.REVOCATION_ENDPOINT, issuerBaseUrl + "/" + realm + tokenRevocationEndpoint);
-        customClaims.put(OidcCustomClaims.INTROSPECTION_ENDPOINT, issuerBaseUrl + "/" + realm + introspectionEndpoint);
-        customClaims.put(OidcCustomClaims.ID_TOKEN_SIGNING_ALG_VALUES_SUPPORTED, Collections.singletonList("ES256"));
-        customClaims.put(OidcCustomClaims.SUBJECT_TYPES_SUPPORTED, Collections.singletonList("public"));
-        customClaims.put(OidcCustomClaims.GRANT_TYPES_SUPPORTED, Collections.singletonList("client_credentials"));
-        customClaims.put(OidcCustomClaims.USERINFO_ENDPOINT, issuerBaseUrl + "/" + realm + "/userinfo");
-        customClaims.put(OidcCustomClaims.INTROSPECTION_ENDPOINT_AUTH_METHODS_SUPPORTED, Collections.singletonList("client_secret_post"));
-        customClaims.put(OidcCustomClaims.REVOCATION_ENDPOINT_AUTH_METHODS_SUPPORTED, Collections.singletonList("client_secret_post"));
-
-        // Replace all claims with our custom set
-        builder.claims(claims -> {
-            claims.clear(); // Remove all default claims
-            claims.putAll(customClaims); // Add only our specified claims
-        });
     }
 }

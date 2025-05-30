@@ -106,7 +106,7 @@ public class CustomRealmFilter extends OncePerRequestFilter {
 
             logger.info("Found {} realms in the database", listOfRealms.size());
         } catch (SQLException e) {
-            logger.error("Error while getting all realms: {}", e.getMessage());
+            logger.error("Error while fetching realms: {}", e.getMessage());
         }
     }
 }
