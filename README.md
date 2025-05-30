@@ -1,28 +1,99 @@
-# Getting Started
+# PHI Authentication Service
 
-### Reference Documentation
+(ESP) Authentication Service provides OAuth2 Authorization Server capabilities for secure access management.
 
-For further reference, please consider the following sections:
+## Overview
 
-* [Official Apache Maven documentation](https://maven.apache.org/guides/index.html)
-* [Spring Boot Maven Plugin Reference Guide](https://docs.spring.io/spring-boot/3.4.4/maven-plugin)
-* [Create an OCI image](https://docs.spring.io/spring-boot/3.4.4/maven-plugin/build-image.html)
-* [OAuth2 Authorization Server](https://docs.spring.io/spring-boot/3.4.4/reference/web/spring-security.html#web.security.oauth2.authorization-server)
-* [Spring Web](https://docs.spring.io/spring-boot/3.4.4/reference/web/servlet.html)
+This project implements a Spring Boot-based OAuth2 Authorization Server that supports:
+- OAuth2 authentication flows
+- JWT token generation and validation
+- Multiple database connections (MBS and Accurint)
+- Custom realm-based authentication
 
-### Guides
+## Technologies
 
-The following guides illustrate how to use some features concretely:
+- Java 21
+- Spring Boot 3.4.4
+- Spring Security OAuth2 Authorization Server
+- MySQL Database
+- Maven
+- JaCoCo (for code coverage reports)
 
-* [Building a RESTful Web Service](https://spring.io/guides/gs/rest-service/)
-* [Serving Web Content with Spring MVC](https://spring.io/guides/gs/serving-web-content/)
-* [Building REST services with Spring](https://spring.io/guides/tutorials/rest/)
+## Prerequisites
 
-### Maven Parent overrides
+- JDK 21+
+- Maven 3.6+
+- MySQL database
+- Environment variables configuration (see below)
 
-Due to Maven's design, elements are inherited from the parent POM to the project POM.
-While most of the inheritance is fine, it also inherits unwanted elements like `<license>` and `<developers>` from the
-parent.
-To prevent this, the project POM contains empty overrides for these elements.
-If you manually switch to a different parent and actually want the inheritance, you need to remove those overrides.
+## Environment Configuration
 
+The application requires the following environment variables to be set:
+
+### Database Configuration
+- `ESP_PHI_AUTH_MBS_DB_URL`: URL for the MBS database
+- `ESP_PHI_AUTH_MBS_DB_USERNAME`: Username for the MBS database
+- `ESP_PHI_AUTH_MBS_DB_PASSWORD`: Password for the MBS database
+- `ESP_PHI_AUTH_ACCURINT_DB_URL`: URL for the Accurint database
+- `ESP_PHI_AUTH_ACCURINT_DB_USERNAME`: Username for the Accurint database
+- `ESP_PHI_AUTH_ACCURINT_DB_PASSWORD`: Password for the Accurint database
+
+### OAuth2/OIDC Configuration
+- `ESP_PHI_AUTH_OIDC_ISSUER_BASE_URL`: Base URL for the OIDC issuer
+- `ESP_PHI_AUTH_AUTHORIZATION_ENDPOINT`: Authorization endpoint path
+- `ESP_PHI_AUTH_TOKEN_ENDPOINT`: Token endpoint path
+- `ESP_PHI_AUTH_JWKS_ENDPOINT`: JWKS endpoint path
+- `ESP_PHI_AUTH_INTROSPECTION_ENDPOINT`: Token introspection endpoint path
+- `ESP_PHI_AUTH_TOKEN_REVOCATION_ENDPOINT`: Token revocation endpoint path
+
+### Client Credentials
+- `ESP_PHI_AUTH_CLIENT_USERNAME`: OAuth2 client username
+- `ESP_PHI_AUTH_CLIENT_SECRET`: OAuth2 client secret
+
+Environment variables can be set in the `env/phi-auth.env` file for development.
+
+## Build and Run
+
+### Using Maven
+
+```bash
+# Build the application
+./mvnw clean package
+
+# Run the application
+./mvnw spring-boot:run
+
+# Run with specific profile
+./mvnw spring-boot:run -Dspring.profiles.active=dev
+```
+
+### Using JAR file
+
+```bash
+java -jar target/esp-project-0.0.1-SNAPSHOT.jar
+```
+
+## Testing
+
+Run the tests using Maven:
+
+```bash
+./mvnw test
+```
+
+### Code Coverage
+
+JaCoCo is configured to generate code coverage reports. After running tests, the reports can be found at:
+
+```
+target/site/jacoco/index.html
+```
+
+## API Endpoints
+
+The service runs on port 8081 by default and provides the following OAuth2 endpoints:
+
+- **Token**: `/oauth2/token`
+- **JWKS**: `/oauth2/jwks`
+- **Introspection**: `/oauth2/introspect`
+- **Token Revocation**: `/oauth2/revoke`

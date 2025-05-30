@@ -2,11 +2,11 @@ package net.risk.phiauth.service.impl;
 
 import com.nimbusds.jose.shaded.gson.JsonObject;
 import com.nimbusds.jose.shaded.gson.JsonParser;
+import net.risk.phiauth.constant.DBConfigKeys;
 import net.risk.phiauth.config.DbConfig;
 import net.risk.phiauth.util.KeyUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
@@ -19,7 +19,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static net.risk.phiauth.constant.SQLQueriesConstants.ALL_DATA_FROM_REALM;
-
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
@@ -41,16 +40,30 @@ class KeyManagementImplTest {
     @Mock
     private ResultSet resultSet;
 
-    @InjectMocks
     private KeyManagementImpl keyManagementImpl;
+    private Map<String, String> envCache;
+    private static final String TEST_URL = "jdbc:mock:url";
+    private static final String TEST_USERNAME = "testuser";
+    private static final String TEST_PASSWORD = "testpass";
 
     @BeforeEach
     void setUp() throws Exception {
         MockitoAnnotations.openMocks(this);
-        when(dbConfig.dataSource()).thenReturn(dataSource);
+
+        // Setup environment cache with test values
+        envCache = new HashMap<>();
+        envCache.put(DBConfigKeys.MBS_URL_KEY, TEST_URL);
+        envCache.put(DBConfigKeys.MBS_USERNAME_KEY, TEST_USERNAME);
+        envCache.put(DBConfigKeys.MBS_PASSWORD_KEY, TEST_PASSWORD);
+
+        // Setup database connection mocks
+        when(dbConfig.createDataSource(TEST_URL, TEST_USERNAME, TEST_PASSWORD)).thenReturn(dataSource);
         when(dataSource.getConnection()).thenReturn(connection);
         when(connection.prepareStatement(anyString())).thenReturn(preparedStatement);
         when(preparedStatement.executeQuery()).thenReturn(resultSet);
+
+        // Create instance with mocked dependencies
+        keyManagementImpl = new KeyManagementImpl(dbConfig, envCache);
     }
 
     @Test
@@ -69,6 +82,7 @@ class KeyManagementImplTest {
         JsonObject expected = JsonParser.parseString("{\"key\":\"value\"}").getAsJsonObject();
         assertEquals(expected, result);
         verify(preparedStatement).setString(1, realm);
+        verify(dbConfig).createDataSource(TEST_URL, TEST_USERNAME, TEST_PASSWORD);
     }
 
     @Test
@@ -86,8 +100,8 @@ class KeyManagementImplTest {
         JsonObject expected = JsonParser.parseString("{\"kty\":\"EC\",\"e\":\"AQAB\"}").getAsJsonObject();
         assertEquals(expected, result);
         verify(preparedStatement).setString(1, realm);
+        verify(dbConfig).createDataSource(TEST_URL, TEST_USERNAME, TEST_PASSWORD);
     }
-
 
     @Test
     void getAllDataForRealm_validData_returnsAllRecords() throws Exception {
@@ -98,7 +112,7 @@ class KeyManagementImplTest {
         when(resultSet.getString("public_key")).thenReturn("{\"key\":\"public1\"}", "{\"key\":\"public2\"}");
         when(resultSet.getString("date_expire")).thenReturn("2023-01-01", "2023-02-01");
         when(resultSet.getString("date_added")).thenReturn("2022-01-01", "2022-02-01");
-        when(resultSet.getInt("status")).thenReturn(1, 1);
+        when(resultSet.getString("status")).thenReturn("1", "1");
 
         // Act
         Map<String, Map<String, String>> result = keyManagementImpl.getAllDataForRealm();
@@ -110,11 +124,14 @@ class KeyManagementImplTest {
         assertEquals("{\"key\":\"private1\"}", result.get("realm1").get("private_key"));
         assertEquals("{\"key\":\"public2\"}", result.get("realm2").get("public_key"));
         verify(connection).prepareStatement(ALL_DATA_FROM_REALM);
+        verify(dbConfig).createDataSource(TEST_URL, TEST_USERNAME, TEST_PASSWORD);
     }
 
     @Test
     void getAllDataForRealm_sqlException_returnsEmptyMap() throws Exception {
         // Arrange
+        when(dbConfig.createDataSource(TEST_URL, TEST_USERNAME, TEST_PASSWORD)).thenReturn(dataSource);
+        when(dataSource.getConnection()).thenReturn(connection);
         when(connection.prepareStatement(ALL_DATA_FROM_REALM)).thenThrow(new SQLException("Database error"));
 
         // Act
@@ -123,6 +140,7 @@ class KeyManagementImplTest {
         // Assert
         assertNotNull(result);
         assertTrue(result.isEmpty());
+        verify(dbConfig).createDataSource(TEST_URL, TEST_USERNAME, TEST_PASSWORD);
     }
 
     @Test

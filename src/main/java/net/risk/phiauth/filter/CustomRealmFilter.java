@@ -4,6 +4,7 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import net.risk.phiauth.constant.DBConfigKeys;
 import net.risk.phiauth.config.DbConfig;
 import net.risk.phiauth.context.RealmContextHolder;
 import net.risk.phiauth.util.RealmRequestWrapper;
@@ -18,6 +19,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import static net.risk.phiauth.constant.SQLQueriesConstants.ALL_DATA_FROM_REALM;
 
@@ -26,10 +28,12 @@ public class CustomRealmFilter extends OncePerRequestFilter {
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
     private final DbConfig dbConfig;
+    private final Map<String, String> envCache;
     List<String> listOfRealms;
 
-    public CustomRealmFilter(DbConfig dbConfig) {
+    public CustomRealmFilter(DbConfig dbConfig, Map<String, String> envCache) {
         this.dbConfig = dbConfig;
+        this.envCache = envCache;
         this.listOfRealms = new ArrayList<>();
         checkRealm();
     }
@@ -83,9 +87,15 @@ public class CustomRealmFilter extends OncePerRequestFilter {
     }
 
     private void checkRealm() {
-        try{
-            logger.info("Getting all realms from database");
-            PreparedStatement preparedStatement = dbConfig.dataSource()
+        try {
+            logger.info("Getting all realms from database using cached credentials");
+
+            // Use the cached MBS credentials to create the connection
+            String url = envCache.get(DBConfigKeys.MBS_URL_KEY);
+            String username = envCache.get(DBConfigKeys.MBS_USERNAME_KEY);
+            String password = envCache.get(DBConfigKeys.MBS_PASSWORD_KEY);
+
+            PreparedStatement preparedStatement = dbConfig.createDataSource(url, username, password)
                     .getConnection()
                     .prepareStatement(ALL_DATA_FROM_REALM);
             ResultSet resultSet = preparedStatement.executeQuery();
@@ -93,9 +103,10 @@ public class CustomRealmFilter extends OncePerRequestFilter {
             while (resultSet.next()) {
                 listOfRealms.add(resultSet.getString("use_case"));
             }
+
+            logger.info("Found {} realms in the database", listOfRealms.size());
         } catch (SQLException e) {
             logger.error("Error while getting all realms: {}", e.getMessage());
         }
-
     }
 }

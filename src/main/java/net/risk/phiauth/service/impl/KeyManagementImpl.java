@@ -3,6 +3,7 @@ package net.risk.phiauth.service.impl;
 import com.nimbusds.jose.shaded.gson.JsonObject;
 import com.nimbusds.jose.shaded.gson.JsonParser;
 import lombok.extern.slf4j.Slf4j;
+import net.risk.phiauth.constant.DBConfigKeys;
 import net.risk.phiauth.config.DbConfig;
 import net.risk.phiauth.constant.SQLQueriesConstants;
 import net.risk.phiauth.service.IKeyManagement;
@@ -24,20 +25,28 @@ import static net.risk.phiauth.constant.SQLQueriesConstants.GET_TOKEN_KEYS_USING
 public class KeyManagementImpl implements IKeyManagement {
 
     private final DbConfig dbConfig;
+    private final String mbsHost;
+    private final String mbsUsername;
+    private final String mbsPassword;
+
     @Autowired
-    public KeyManagementImpl(DbConfig dbConfig) {
+    public KeyManagementImpl(DbConfig dbConfig, Map<String, String> envCache) {
         this.dbConfig = dbConfig;
+        this.mbsHost = envCache.get(DBConfigKeys.MBS_URL_KEY);
+        this.mbsUsername = envCache.get(DBConfigKeys.MBS_USERNAME_KEY);
+        this.mbsPassword = envCache.get(DBConfigKeys.MBS_PASSWORD_KEY);
     }
 
     @Override
-    public void manageTokenKeys() { updateKeysForAllRealms();}
-
+    public void manageTokenKeys() {
+        updateKeysForAllRealms();
+    }
 
     @Override
     public JsonObject getTokenPublicKeys(String realm) {
         Map<String, String> records = new HashMap<>();
         try {
-            PreparedStatement result = dbConfig.dataSource()
+            PreparedStatement result = dbConfig.createDataSource(mbsHost, mbsUsername, mbsPassword)
                     .getConnection()
                     .prepareStatement(GET_TOKEN_KEYS_USING_REALM);
             result.setString(1, realm);
@@ -60,7 +69,7 @@ public class KeyManagementImpl implements IKeyManagement {
         Map<String, String> records = new HashMap<>();
 
         try {
-            PreparedStatement preparedStatement = dbConfig.dataSource()
+            PreparedStatement preparedStatement = dbConfig.createDataSource(mbsHost, mbsUsername, mbsPassword)
                     .getConnection()
                     .prepareStatement(GET_TOKEN_KEYS_USING_REALM);
             preparedStatement.setString(1, realm);
@@ -78,7 +87,6 @@ public class KeyManagementImpl implements IKeyManagement {
         var privateKey = records.get("private_key");
         var privateKeyJson = JsonParser.parseString(privateKey.toString()).getAsJsonObject();
         return privateKeyJson;
-
     }
 
     @Override
@@ -138,8 +146,7 @@ public class KeyManagementImpl implements IKeyManagement {
         Map<String, Map<String, String>> records = new HashMap<>();
 
         try {
-
-            PreparedStatement preparedStatement = dbConfig.dataSource()
+            PreparedStatement preparedStatement = dbConfig.createDataSource(mbsHost, mbsUsername, mbsPassword)
                     .getConnection()
                     .prepareStatement(SQLQueriesConstants.ALL_DATA_FROM_REALM);
             ResultSet resultSet = preparedStatement.executeQuery();

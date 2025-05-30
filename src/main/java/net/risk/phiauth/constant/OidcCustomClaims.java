@@ -1,6 +1,6 @@
 package net.risk.phiauth.constant;
 
-public class OidcClaims {
+public class OidcCustomClaims {
     public static final String AUTHORIZATION_ENDPOINT = "authorization_endpoint";
     public static final String ISSUER = "issuer";
     public static final String JWKS_URI = "jwks_uri";

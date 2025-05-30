@@ -1,25 +1,54 @@
 package net.risk.phiauth.config;
 
-import org.springframework.beans.factory.annotation.Value;
+import net.risk.phiauth.constant.DBConfigKeys;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.jdbc.DataSourceBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 
 import javax.sql.DataSource;
+import java.util.Map;
 
 @Configuration
 public class DbConfig {
 
-    @Value("${phi.auth.datasource.url}") String dataSourceUrl;
-    @Value("${phi.auth.datasource.username}") String dataSourceUsername;
-    @Value("${phi.auth.datasource.password}") String dataSourcePassword;
+    private final Map<String, String> envCache;
 
-    @Bean
-    public DataSource dataSource() {
+    @Autowired
+    public DbConfig(Map<String, String> envCache) {
+        this.envCache = envCache;
+    }
+
+    /**
+     * Creates a DataSource with the provided database connection parameters.
+     *
+     * @param url Database connection URL
+     * @param userName Database username
+     * @param password Database password
+     * @return Configured DataSource
+     */
+    public DataSource createDataSource(String url, String userName, String password) {
         return DataSourceBuilder.create()
-                .url(dataSourceUrl)
-                .username(dataSourceUsername)
-                .password(dataSourcePassword)
+                .url(url)
+                .username(userName)
+                .password(password)
                 .build();
+    }
+
+    /**
+     * Primary DataSource bean to satisfy Spring Boot's requirement
+     * Uses credentials from environment cache
+     */
+    @Bean
+    @Primary
+    @ConfigurationProperties(prefix = "spring.datasource")
+    public DataSource dataSource() {
+        String url = envCache.get(DBConfigKeys.MBS_URL_KEY);
+        String username = envCache.get(DBConfigKeys.MBS_USERNAME_KEY);
+        String password = envCache.get(DBConfigKeys.MBS_PASSWORD_KEY);
+
+        return createDataSource(url, username, password);
     }
 }

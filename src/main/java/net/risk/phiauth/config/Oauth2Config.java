@@ -1,7 +1,7 @@
 package net.risk.phiauth.config;
 
 import lombok.extern.slf4j.Slf4j;
-import net.risk.phiauth.constant.OidcClaims;
+import net.risk.phiauth.constant.OidcCustomClaims;
 import net.risk.phiauth.context.RealmContextHolder;
 import net.risk.phiauth.filter.CustomRealmFilter;
 import net.risk.phiauth.service.impl.JwkSourceService;
@@ -157,20 +157,20 @@ public class Oauth2Config {
         // First, create a map with only the claims we want
         Map<String, Object> customClaims = new HashMap<>();
 
-        customClaims.put(OidcClaims.AUTHORIZATION_ENDPOINT, issuerBaseUrl + "/" + realm + authorizationEndpoint);
-        customClaims.put(OidcClaims.ISSUER, issuerBaseUrl + "/" + realm);
-        customClaims.put(OidcClaims.JWKS_URI, issuerBaseUrl + "/" + realm + jwksEndpoint);
-        customClaims.put(OidcClaims.RESPONSE_TYPES_SUPPORTED, Collections.singletonList("token"));
-        customClaims.put(OidcClaims.TOKEN_ENDPOINT, issuerBaseUrl + "/" + realm + tokenEndpoint);
-        customClaims.put(OidcClaims.TOKEN_ENDPOINT_AUTH_METHODS_SUPPORTED, Collections.singletonList("client_secret_post"));
-        customClaims.put(OidcClaims.REVOCATION_ENDPOINT, issuerBaseUrl + "/" + realm + tokenRevocationEndpoint);
-        customClaims.put(OidcClaims.INTROSPECTION_ENDPOINT, issuerBaseUrl + "/" + realm + introspectionEndpoint);
-        customClaims.put(OidcClaims.ID_TOKEN_SIGNING_ALG_VALUES_SUPPORTED, Collections.singletonList("ES256"));
-        customClaims.put(OidcClaims.SUBJECT_TYPES_SUPPORTED, Collections.singletonList("public"));
-        customClaims.put(OidcClaims.GRANT_TYPES_SUPPORTED, Collections.singletonList("client_credentials"));
-        customClaims.put(OidcClaims.USERINFO_ENDPOINT, issuerBaseUrl + "/" + realm + "/userinfo");
-        customClaims.put(OidcClaims.INTROSPECTION_ENDPOINT_AUTH_METHODS_SUPPORTED, Collections.singletonList("client_secret_post"));
-        customClaims.put(OidcClaims.REVOCATION_ENDPOINT_AUTH_METHODS_SUPPORTED, Collections.singletonList("client_secret_post"));
+        customClaims.put(OidcCustomClaims.AUTHORIZATION_ENDPOINT, issuerBaseUrl + "/" + realm + authorizationEndpoint);
+        customClaims.put(OidcCustomClaims.ISSUER, issuerBaseUrl + "/" + realm);
+        customClaims.put(OidcCustomClaims.JWKS_URI, issuerBaseUrl + "/" + realm + jwksEndpoint);
+        customClaims.put(OidcCustomClaims.RESPONSE_TYPES_SUPPORTED, Collections.singletonList("token"));
+        customClaims.put(OidcCustomClaims.TOKEN_ENDPOINT, issuerBaseUrl + "/" + realm + tokenEndpoint);
+        customClaims.put(OidcCustomClaims.TOKEN_ENDPOINT_AUTH_METHODS_SUPPORTED, Collections.singletonList("client_secret_post"));
+        customClaims.put(OidcCustomClaims.REVOCATION_ENDPOINT, issuerBaseUrl + "/" + realm + tokenRevocationEndpoint);
+        customClaims.put(OidcCustomClaims.INTROSPECTION_ENDPOINT, issuerBaseUrl + "/" + realm + introspectionEndpoint);
+        customClaims.put(OidcCustomClaims.ID_TOKEN_SIGNING_ALG_VALUES_SUPPORTED, Collections.singletonList("ES256"));
+        customClaims.put(OidcCustomClaims.SUBJECT_TYPES_SUPPORTED, Collections.singletonList("public"));
+        customClaims.put(OidcCustomClaims.GRANT_TYPES_SUPPORTED, Collections.singletonList("client_credentials"));
+        customClaims.put(OidcCustomClaims.USERINFO_ENDPOINT, issuerBaseUrl + "/" + realm + "/userinfo");
+        customClaims.put(OidcCustomClaims.INTROSPECTION_ENDPOINT_AUTH_METHODS_SUPPORTED, Collections.singletonList("client_secret_post"));
+        customClaims.put(OidcCustomClaims.REVOCATION_ENDPOINT_AUTH_METHODS_SUPPORTED, Collections.singletonList("client_secret_post"));
 
         // Replace all claims with our custom set
         builder.claims(claims -> {
