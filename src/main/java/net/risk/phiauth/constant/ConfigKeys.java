@@ -1,16 +1,6 @@
 package net.risk.phiauth.constant;
 
-public class DBConfigKeys {
-    // MBS datasource constants
-    public static final String MBS_URL_KEY = "mbs.url";
-    public static final String MBS_USERNAME_KEY = "mbs.username";
-    public static final String MBS_PASSWORD_KEY = "mbs.password";
-
-    // Accurint datasource constants
-    public static final String ACCURINT_URL_KEY = "accurint.url";
-    public static final String ACCURINT_USERNAME_KEY = "accurint.username";
-    public static final String ACCURINT_PASSWORD_KEY = "accurint.password";
-
+public class ConfigKeys {
     public static final String ACCURINT_DB_SPROC = "sp_aac_authorize_v3";
 
     // Vault constants

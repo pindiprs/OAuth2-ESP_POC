@@ -4,7 +4,8 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import net.risk.phiauth.constant.DBConfigKeys;
+import net.risk.phiauth.config.ServiceConfig;
+import net.risk.phiauth.constant.ConfigKeys;
 import net.risk.phiauth.config.DbConfig;
 import net.risk.phiauth.context.RealmContextHolder;
 import net.risk.phiauth.util.RealmRequestWrapper;
@@ -28,12 +29,12 @@ public class CustomRealmFilter extends OncePerRequestFilter {
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
     private final DbConfig dbConfig;
-    private final Map<String, String> envCache;
+    private final ServiceConfig serviceConfig;
     List<String> listOfRealms;
 
-    public CustomRealmFilter(DbConfig dbConfig, Map<String, String> envCache) {
+    public CustomRealmFilter(DbConfig dbConfig, ServiceConfig serviceConfig) {
         this.dbConfig = dbConfig;
-        this.envCache = envCache;
+        this.serviceConfig = serviceConfig;
         this.listOfRealms = new ArrayList<>();
         checkRealm();
     }
@@ -91,9 +92,9 @@ public class CustomRealmFilter extends OncePerRequestFilter {
             logger.info("Getting all realms from database using cached credentials");
 
             // Use the cached MBS credentials to create the connection
-            String url = envCache.get(DBConfigKeys.MBS_URL_KEY);
-            String username = envCache.get(DBConfigKeys.MBS_USERNAME_KEY);
-            String password = envCache.get(DBConfigKeys.MBS_PASSWORD_KEY);
+            String url = serviceConfig.getMbsUrl();
+            String username = serviceConfig.getMbsUsername();
+            String password = serviceConfig.getMbsPassword();
 
             PreparedStatement preparedStatement = dbConfig.createDataSource(url, username, password)
                     .getConnection()

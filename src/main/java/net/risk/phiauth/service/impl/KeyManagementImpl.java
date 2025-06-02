@@ -3,7 +3,7 @@ package net.risk.phiauth.service.impl;
 import com.nimbusds.jose.shaded.gson.JsonObject;
 import com.nimbusds.jose.shaded.gson.JsonParser;
 import lombok.extern.slf4j.Slf4j;
-import net.risk.phiauth.constant.DBConfigKeys;
+import net.risk.phiauth.config.ServiceConfig;
 import net.risk.phiauth.config.DbConfig;
 import net.risk.phiauth.constant.SQLQueriesConstants;
 import net.risk.phiauth.service.IKeyManagement;
@@ -30,11 +30,11 @@ public class KeyManagementImpl implements IKeyManagement {
     private final String mbsPassword;
 
     @Autowired
-    public KeyManagementImpl(DbConfig dbConfig, Map<String, String> envCache) {
+    public KeyManagementImpl(DbConfig dbConfig, ServiceConfig serviceConfig) {
         this.dbConfig = dbConfig;
-        this.mbsHost = envCache.get(DBConfigKeys.MBS_URL_KEY);
-        this.mbsUsername = envCache.get(DBConfigKeys.MBS_USERNAME_KEY);
-        this.mbsPassword = envCache.get(DBConfigKeys.MBS_PASSWORD_KEY);
+        this.mbsHost = serviceConfig.getMbsUrl();
+        this.mbsUsername = serviceConfig.getMbsUsername();
+        this.mbsPassword = serviceConfig.getMbsPassword();
     }
 
     @Override

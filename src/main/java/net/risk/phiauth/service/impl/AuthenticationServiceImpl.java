@@ -1,7 +1,8 @@
 package net.risk.phiauth.service.impl;
 
 import net.risk.phiauth.config.DbConfig;
-import net.risk.phiauth.constant.DBConfigKeys;
+import net.risk.phiauth.config.ServiceConfig;
+import net.risk.phiauth.constant.ConfigKeys;
 import net.risk.phiauth.constant.AcurrientAuthenticationStatus;
 import net.risk.phiauth.service.IAuthenticationManagement;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -15,18 +16,19 @@ import java.util.Map;
 public class AuthenticationServiceImpl implements IAuthenticationManagement {
 
     private final JdbcTemplate jdbcTemplate;
-
-    public AuthenticationServiceImpl(DbConfig dbConfig, Map<String, String> envCache) {
-        String url = envCache.get(DBConfigKeys.ACCURINT_URL_KEY);
-        String username = envCache.get(DBConfigKeys.ACCURINT_USERNAME_KEY);
-        String password = envCache.get(DBConfigKeys.ACCURINT_PASSWORD_KEY);
+    private final ServiceConfig serviceConfig;
+    public AuthenticationServiceImpl(DbConfig dbConfig, ServiceConfig serviceConfig) {
+        this.serviceConfig = serviceConfig;
+        String url = serviceConfig.getAccurintUrl();
+        String username = serviceConfig.getAccurintUsername();
+        String password = serviceConfig.getAccurintPassword();
         this.jdbcTemplate = new JdbcTemplate(dbConfig.createDataSource(url, username, password));
     }
 
     @Override
     public AcurrientAuthenticationStatus authenticate(String userId, String credential) {
         SimpleJdbcCall jdbcCall = new SimpleJdbcCall(jdbcTemplate)
-                .withProcedureName(DBConfigKeys.ACCURINT_DB_SPROC);
+                .withProcedureName(ConfigKeys.ACCURINT_DB_SPROC);
 
         MapSqlParameterSource params = new MapSqlParameterSource()
                 .addValue("p_loginid", userId)

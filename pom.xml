@@ -65,19 +65,20 @@
             <artifactId>spring-boot-starter-actuator</artifactId>
         </dependency>
 
-        <!--   Need this for configurational setup of hashicorp -->
-        <dependency>
-            <groupId>com.relx.rba.tardis</groupId>
-            <artifactId>runtime</artifactId>
-            <version>${tardis.version}</version>
-        </dependency>
+<!--        &lt;!&ndash;   Need this for configurational setup of hashicorp &ndash;&gt;-->
+<!--        <dependency>-->
+<!--            <groupId>com.relx.rba.tardis</groupId>-->
+<!--            <artifactId>runtime</artifactId>-->
+<!--            <version>${tardis.version}</version>-->
+<!--        </dependency>-->
 
-        <!--   Need this for interacting with HashiCorp Secret Store -->
-        <dependency>
-            <groupId>com.relx.rba.tardis</groupId>
-            <artifactId>credential</artifactId>
-            <version>${tardis.version}</version>
-        </dependency>
+<!--        &lt;!&ndash;   Need this for interacting with HashiCorp Secret Store &ndash;&gt;-->
+<!--        <dependency>-->
+<!--            <groupId>com.relx.rba.tardis</groupId>-->
+<!--            <artifactId>credential</artifactId>-->
+<!--            <version>${tardis.version}</version>-->
+<!--        </dependency>-->
+
     </dependencies>
 
     <repositories>

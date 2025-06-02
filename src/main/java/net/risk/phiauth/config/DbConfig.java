@@ -2,7 +2,6 @@ package net.risk.phiauth.config;
 
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
-import net.risk.phiauth.constant.DBConfigKeys;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
@@ -10,16 +9,15 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 
 import javax.sql.DataSource;
-import java.util.Map;
 
 @Configuration
 public class DbConfig {
 
-    private final Map<String, String> envCache;
+    private final ServiceConfig serviceConfig;
 
     @Autowired
-    public DbConfig(Map<String, String> envCache) {
-        this.envCache = envCache;
+    public DbConfig(ServiceConfig serviceConfig) {
+        this.serviceConfig = serviceConfig;
     }
    
    /**
@@ -54,9 +52,9 @@ public class DbConfig {
     @Primary
     @ConfigurationProperties(prefix = "phi.auth.mbs")
     public DataSource mbsDataSource() {
-        String url = envCache.get(DBConfigKeys.MBS_URL_KEY);
-        String username = envCache.get(DBConfigKeys.MBS_USERNAME_KEY);
-        String password = envCache.get(DBConfigKeys.MBS_PASSWORD_KEY);
+        String url = serviceConfig.getMbsUrl();
+        String username = serviceConfig.getMbsUsername();
+        String password = serviceConfig.getMbsPassword();
 
         return createDataSource(url, username, password);
     }
@@ -64,10 +62,9 @@ public class DbConfig {
     @Bean
     @ConfigurationProperties(prefix = "phi.auth.accurint")
     public DataSource accurintDataSource() {
-        String url = envCache.get(DBConfigKeys.ACCURINT_URL_KEY);
-        String username = envCache.get(DBConfigKeys.ACCURINT_USERNAME_KEY);
-        String password = envCache.get(DBConfigKeys.ACCURINT_PASSWORD_KEY);
-
+        String url = serviceConfig.getAccurintUrl();
+        String username = serviceConfig.getAccurintUsername();
+        String password = serviceConfig.getAccurintPassword();
         return createDataSource(url, username, password);
     }
 }

@@ -2,8 +2,8 @@ package net.risk.phiauth.service.impl;
 
 import com.nimbusds.jose.shaded.gson.JsonObject;
 import com.nimbusds.jose.shaded.gson.JsonParser;
-import net.risk.phiauth.constant.DBConfigKeys;
 import net.risk.phiauth.config.DbConfig;
+import net.risk.phiauth.config.ServiceConfig;
 import net.risk.phiauth.util.KeyUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -29,6 +29,9 @@ class KeyManagementImplTest {
     private DbConfig dbConfig;
 
     @Mock
+    private ServiceConfig serviceConfig;
+
+    @Mock
     private DataSource dataSource;
 
     @Mock
@@ -41,7 +44,6 @@ class KeyManagementImplTest {
     private ResultSet resultSet;
 
     private KeyManagementImpl keyManagementImpl;
-    private Map<String, String> envCache;
     private static final String TEST_URL = "jdbc:mock:url";
     private static final String TEST_USERNAME = "testuser";
     private static final String TEST_PASSWORD = "testpass";
@@ -50,11 +52,10 @@ class KeyManagementImplTest {
     void setUp() throws Exception {
         MockitoAnnotations.openMocks(this);
 
-        // Setup environment cache with test values
-        envCache = new HashMap<>();
-        envCache.put(DBConfigKeys.MBS_URL_KEY, TEST_URL);
-        envCache.put(DBConfigKeys.MBS_USERNAME_KEY, TEST_USERNAME);
-        envCache.put(DBConfigKeys.MBS_PASSWORD_KEY, TEST_PASSWORD);
+        // Setup ServiceConfig mock with test values
+        when(serviceConfig.getMbsUrl()).thenReturn(TEST_URL);
+        when(serviceConfig.getMbsUsername()).thenReturn(TEST_USERNAME);
+        when(serviceConfig.getMbsPassword()).thenReturn(TEST_PASSWORD);
 
         // Setup database connection mocks
         when(dbConfig.createDataSource(TEST_URL, TEST_USERNAME, TEST_PASSWORD)).thenReturn(dataSource);
@@ -63,7 +64,7 @@ class KeyManagementImplTest {
         when(preparedStatement.executeQuery()).thenReturn(resultSet);
 
         // Create instance with mocked dependencies
-        keyManagementImpl = new KeyManagementImpl(dbConfig, envCache);
+        keyManagementImpl = new KeyManagementImpl(dbConfig, serviceConfig);
     }
 
     @Test

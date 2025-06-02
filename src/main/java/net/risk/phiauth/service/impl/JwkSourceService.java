@@ -10,14 +10,10 @@ import net.risk.phiauth.util.KeyUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-
 @Service
 public class JwkSourceService {
 
     private final KeyManagementImpl keyManagement;
-    private final Map<String, JWKSource<SecurityContext>> jwkSourceCache = new ConcurrentHashMap<>();
 
     @Autowired
     public JwkSourceService(KeyManagementImpl keyManagement) {
