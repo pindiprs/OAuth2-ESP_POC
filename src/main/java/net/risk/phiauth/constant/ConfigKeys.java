@@ -11,9 +11,17 @@ public class DBConfigKeys {
     public static final String ACCURINT_USERNAME_KEY = "accurint.username";
     public static final String ACCURINT_PASSWORD_KEY = "accurint.password";
 
+    public static final String ACCURINT_DB_SPROC = "sp_aac_authorize_v3";
+
     // Vault constants
-    public static final String VAULT_ADDRESS_KEY = "vault.address";
-    public static final String VAULT_ROLE_ID_KEY = "vault.role.id";
-    public static final String VAULT_SECRET_ID_KEY = "vault.secret.id";
-    public static final String VAULT_NAMESPACE_KEY = "vault.namespace";
+    public static final String VAULT_ADDRESS = "vault.vaultAddress";
+    public static final String VAULT_ROLE_ID_KEY = "vault.roleId";
+    public static final String VAULT_SECRET_ID_KEY = "vault.secretId";
+    public static final String VAULT_NAMESPACE_KEY = "vault.vaultNameSpace";
+    public static final String VAULT_TOKEN_KEY = "vault.vaultToken";
+    public static final String VAULT_SECRET_PATH = "vault.path";
+    public static final String VAULT_TYPE = "vault.type";
+
+
+
 }
