@@ -42,28 +42,29 @@ public class ServiceConfig {
     @Value("${phi.auth.vault.namespace}") private String vaultNamespace;
 
     /**
+     * This method is used for passing the values to Tardis interface for HashiCorp Vault
+     *
      * TODO: GET SECRET METHOD from VAULT
      * should pass the secret path and return the secret
      * if path if value starts with ${secret: someXYZ/secret} then do use this in VAULT
      * else only use the string value.
-     * Don't use MAP, use getters and setters
      * ONLY CACHE vault key value pairs.
      */
     @Bean
-    public Map<String, String> envCache() {
+    public Map<String, String> hashiCorpVaultStoreConfig() {
         log.info("Initializing environment cache");
-        Map<String, String> cache = new HashMap<>();
+        Map<String, String> secretStoreConnectionMap = new HashMap<>();
 
         // Cache Vault properties
-        cache.put(ConfigKeys.VAULT_ADDRESS, vaultUrl);
-        cache.put(ConfigKeys.VAULT_TOKEN_KEY, vaultToken);
-        cache.put(ConfigKeys.VAULT_ROLE_ID_KEY, vaultRoleId);
-        cache.put(ConfigKeys.VAULT_SECRET_ID_KEY, vaultSecretId);
-        cache.put(ConfigKeys.VAULT_NAMESPACE_KEY, vaultNamespace);
-        cache.put(ConfigKeys.VAULT_SECRET_PATH, vaultPath);
-        cache.put(ConfigKeys.VAULT_TYPE, vaultType);
+        secretStoreConnectionMap.put(ConfigKeys.TARDIS_VAULT_ADDRESS, vaultUrl);
+        secretStoreConnectionMap.put(ConfigKeys.TARDIS_VAULT_TOKEN_KEY, vaultToken);
+        secretStoreConnectionMap.put(ConfigKeys.TARDIS_VAULT_ROLE_ID_KEY, vaultRoleId);
+        secretStoreConnectionMap.put(ConfigKeys.TARDIS_VAULT_SECRET_ID_KEY, vaultSecretId);
+        secretStoreConnectionMap.put(ConfigKeys.TARDIS_VAULT_NAMESPACE_KEY, vaultNamespace);
+        secretStoreConnectionMap.put(ConfigKeys.TARDIS_VAULT_SECRET_PATH, vaultPath);
+        secretStoreConnectionMap.put(ConfigKeys.TARDIS_VAULT_TYPE, vaultType);
 
-        log.info("Environment cache initialized with {} entries", cache.size());
-        return cache;
+        log.info("Environment cache initialized with {} entries", secretStoreConnectionMap.size());
+        return secretStoreConnectionMap;
     }
 }
