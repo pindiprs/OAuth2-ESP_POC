@@ -28,6 +28,8 @@
     </scm>
     <properties>
         <java.version>21</java.version>
+        <jacoco-maven-plugin.version>0.8.13</jacoco-maven-plugin.version>
+        <tardis.version>1.22.5</tardis.version>
     </properties>
     <dependencies>
         <dependency>
@@ -62,7 +64,31 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-actuator</artifactId>
         </dependency>
+
+<!--        &lt;!&ndash;   Need this for configurational setup of hashicorp &ndash;&gt;-->
+<!--        <dependency>-->
+<!--            <groupId>com.relx.rba.tardis</groupId>-->
+<!--            <artifactId>runtime</artifactId>-->
+<!--            <version>${tardis.version}</version>-->
+<!--        </dependency>-->
+
+<!--        &lt;!&ndash;   Need this for interacting with HashiCorp Secret Store &ndash;&gt;-->
+<!--        <dependency>-->
+<!--            <groupId>com.relx.rba.tardis</groupId>-->
+<!--            <artifactId>credential</artifactId>-->
+<!--            <version>${tardis.version}</version>-->
+<!--        </dependency>-->
+
     </dependencies>
+
+    <repositories>
+        <repository>
+            <id>jfrog-maven</id>
+            <name>LexisNexis Risk Solutions - JFrog Maven Repository</name>
+            <url>https://useast.jfrog.lexisnexisrisk.com/artifactory/glb-maven-snapshot-virtual/</url>
+        </repository>
+    </repositories>
+
 
     <build>
         <plugins>
@@ -77,6 +103,33 @@
                         </path>
                     </annotationProcessorPaths>
                 </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <version>${jacoco-maven-plugin.version}</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>prepare-agent</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>generate-code-coverage-report</id>
+                        <phase>test</phase>
+                        <goals>
+                            <goal>report</goal>
+                        </goals>
+                    </execution>
+
+                    <execution>
+                        <id>jacoco-site</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>report</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
             <plugin>
                 <groupId>org.springframework.boot</groupId>
